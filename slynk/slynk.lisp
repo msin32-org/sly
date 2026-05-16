@@ -70,6 +70,7 @@
            #:eval-for-emacs
            #:eval-in-emacs
            #:y-or-n-p-in-emacs
+	   #:read-char-in-emacs
            #:*find-definitions-right-trim*
            #:*find-definitions-left-trim*
            #:*after-toggle-trace-hook*
@@ -1294,7 +1295,7 @@ point the thread terminates and CHANNEL is closed."
        :presentation-start :presentation-end
        :new-package :new-features :ed :indentation-update
        :eval :eval-no-wait :background-message :inspect :ping
-       :y-or-n-p :read-from-minibuffer :read-string :read-aborted :test-delay)
+       :y-or-n-p :read-from-minibuffer :read-string :read-char :read-aborted :test-delay)
       &rest _)
      (declare (ignore _))
      (encode-message event (current-socket-io)))
@@ -1600,6 +1601,18 @@ event was found."
     (force-output)
     (send-to-emacs `(:y-or-n-p ,(current-thread-id) ,tag ,question))
     (third (wait-for-event `(:emacs-return ,tag result)))))
+
+(defun read-char-in-emacs ()
+  "Read a single key from Emacs and return it immediately."
+  (let ((tag (make-tag)))
+    (force-output)
+    (send-to-emacs `(:read-char ,(current-thread-id) ,tag))
+    (let ((result (third (wait-for-event `(:emacs-return ,tag result)))))
+      (when result
+        (typecase result
+          (integer (code-char result))
+          (character result)
+          (t result))))))
 
 (defun read-from-minibuffer-in-emacs (prompt &optional initial-value)
   "Ask user a question in Emacs' minibuffer. Returns \"\" when user
