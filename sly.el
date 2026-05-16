@@ -2567,6 +2567,8 @@ Debugged requests are ignored."
                                                initial-value))
           ((:y-or-n-p thread tag question)
            (sly-remote-y-or-n-p thread tag question))
+	  ((:read-char thread tag)
+	   (sly-remote-read-char thread tag))
           ((:emacs-return-string thread tag string)
            (sly-send `(:emacs-return-string ,thread ,tag ,string)))
           ((:new-features features)
@@ -4149,6 +4151,9 @@ the display stuff that we neither need nor want."
 
 (defun sly-remote-y-or-n-p (thread tag question)
   (sly-dispatch-event `(:emacs-return ,thread ,tag ,(sly-y-or-n-p question))))
+
+(defun sly-remote-read-char (thread tag)
+  (sly-dispatch-event `(:emacs-return ,thread ,tag ,(read-event))))
 
 (defun sly-read-from-minibuffer-for-slynk (thread tag prompt initial-value)
   (let ((answer (condition-case nil
